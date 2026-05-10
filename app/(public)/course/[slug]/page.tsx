@@ -14,7 +14,6 @@ import {
   QuoteIcon,
   SparkleIcon,
   ShieldCheckIcon,
-  UsersIcon,
 } from "@/components/public/icons";
 import { FaqAccordion } from "@/components/public/faq-accordion";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
@@ -66,20 +65,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-/**
- * Pulls sensible default values from the price/duration/format detail fields
- * to render hero "trust chips" without the admin having to repeat them.
- */
-function pickHeroChips(fields: Array<{ label: string; value: string; isPrice: boolean }>) {
-  const chips: { label: string; value: string }[] = [];
-  for (const f of fields) {
-    if (f.isPrice) continue;
-    if (chips.length >= 3) break;
-    chips.push({ label: f.label, value: f.value });
-  }
-  return chips;
-}
-
 export default async function CourseLandingPage({ params }: PageProps) {
   const [course, settings] = await Promise.all([
     loadCourse(params.slug),
@@ -104,8 +89,16 @@ export default async function CourseLandingPage({ params }: PageProps) {
     pixelId: settings?.metaPixelId ?? null,
   };
 
-  const heroChips = pickHeroChips(course.detailFields);
-  const priceField = course.detailFields.find((f) => f.isPrice);
+  // Surface price + duration in the hero as big inline label/value pairs.
+  // We keep order: price first (as the user requested), then any
+  // "duration"-shaped detail field. Detection is heuristic so the admin
+  // can keep the field labels in Urdu without us hardcoding them.
+  const priceField = course.detailFields.find((f) => f.isPrice) ?? null;
+  const durationField = course.detailFields.find((f) => {
+    if (f.isPrice) return false;
+    const label = f.label.toLowerCase();
+    return /muddat|duration|مدت|مُدّت|مدّت|عرصہ|مدت /.test(f.label) || /muddat|duration/.test(label);
+  });
 
   return (
     <>
@@ -113,176 +106,158 @@ export default async function CourseLandingPage({ params }: PageProps) {
       <ScrollReveal />
       <SiteHeader settings={settings} />
 
-      <main className="pb-24 sm:pb-12">
-        {/* ── HERO ───────────────────────────────────────────────────────────── */}
+      <main className="pb-24 sm:pb-12 text-center">
+        {/* ── HERO ────────────────────────────────────────────────────── */}
         <section className="relative overflow-hidden">
+          {/* Layered backgrounds — pattern, radial wash, drifting orbs. */}
           <div className="absolute inset-0 bg-pattern-arabesque opacity-50" aria-hidden="true" />
           <div className="absolute inset-0 bg-hero-radial" aria-hidden="true" />
-          <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
-          <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-gold/10 blur-3xl" aria-hidden="true" />
+          <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-brand/15 blur-3xl animate-drift-a" aria-hidden="true" />
+          <div className="absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-gold/15 blur-3xl animate-drift-b" aria-hidden="true" />
 
-          <div className="relative container-wide pt-10 pb-16 sm:pt-16 sm:pb-20">
-            <div className="grid gap-10 lg:grid-cols-2 lg:gap-14 items-center">
-              {/* Text column */}
-              <div>
-                <h1
+          <div className="relative container-tight pt-12 pb-14 sm:pt-20 sm:pb-20">
+            <div className="mx-auto flex flex-col items-center gap-7 sm:gap-9">
+              {/* Sparkle ribbon */}
+              <div
+                data-reveal="out"
+                className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-white/70 backdrop-blur-sm px-4 py-1.5 text-sm text-gold-deep shadow-soft"
+              >
+                <SparkleIcon className="h-4 w-4 text-gold" />
+                <span className="tracking-wide">معیاری اور قابلِ اعتماد</span>
+              </div>
+
+              {/* Title */}
+              <h1
+                data-reveal="out"
+                className="display display-gradient text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight"
+              >
+                {course.title}
+              </h1>
+
+              {/* Subhead */}
+              {course.subHeadline ? (
+                <p
                   data-reveal="out"
-                  className="display text-3xl sm:text-5xl lg:text-6xl font-normal text-brand-darker mb-5"
+                  className="max-w-2xl text-lg sm:text-xl text-slate-700 leading-loose"
                 >
-                  {course.title}
-                </h1>
+                  {course.subHeadline}
+                </p>
+              ) : null}
 
-                {course.subHeadline ? (
-                  <p
-                    data-reveal="out"
-                    className="text-lg sm:text-xl text-slate-700 mb-7 leading-relaxed"
+              {/* Image — fixed-aspect box, scrollable inside (image scrolls
+                  vertically so the visitor can see it in full without the
+                  outer card growing). */}
+              <div data-reveal="out" className="w-full max-w-3xl">
+                <div className="relative">
+                  {/* Glow halo behind the frame */}
+                  <div
+                    className="absolute -inset-4 sm:-inset-6 rounded-[2.25rem] bg-gradient-to-br from-gold/35 via-transparent to-brand/30 blur-2xl opacity-70"
+                    aria-hidden="true"
+                  />
+                  {/* Frame */}
+                  <div className="relative aspect-[4/3] sm:aspect-[16/11] overflow-y-auto scrollbar-hide rounded-[1.75rem] bg-emerald-rich shadow-lift ring-1 ring-brand-dark/15">
+                    {course.heroImageUrl ? (
+                      <>
+                        {/* Plain <img> + h-auto so the image renders at its
+                            natural aspect inside the fixed-height frame.
+                            If the image is taller than the frame, the
+                            container scrolls vertically. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={course.heroImageUrl}
+                          alt={course.title}
+                          className="block w-full h-auto"
+                          loading="eager"
+                        />
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-pattern-arabesque text-white/70 text-lg">
+                        تصویر دستیاب نہیں
+                      </div>
+                    )}
+                  </div>
+                  {/* Scroll hint chevron + bottom fade — only meaningful
+                      when the image is taller than the frame. We always
+                      render it because there's no cheap way to detect
+                      overflow at SSR time, and it's harmless either way. */}
+                  <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-12 rounded-b-[1.75rem] bg-gradient-to-t from-black/40 to-transparent"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 grid h-8 w-8 place-items-center rounded-full bg-white/85 text-brand-dark shadow-lift backdrop-blur-sm animate-scroll-hint"
+                    aria-hidden="true"
                   >
-                    {course.subHeadline}
-                  </p>
-                ) : null}
-
-                {/* Trust chips: surface duration / format / level inline. */}
-                {heroChips.length > 0 ? (
-                  <ul data-reveal="out" className="flex flex-wrap gap-2.5 mb-8">
-                    {heroChips.map((chip, i) => (
-                      <li
-                        key={i}
-                        className="inline-flex items-center gap-2 rounded-full border border-brand/15 bg-white/80 backdrop-blur-sm px-3.5 py-1.5 text-sm text-slate-700 shadow-soft"
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />
-                        <span className="text-slate-500">{chip.label}:</span>
-                        <span className="font-semibold text-brand-darker">{chip.value}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-
-                <div data-reveal="out" className="flex flex-wrap items-center gap-3 sm:gap-4">
-                  <WhatsAppButton {...ctaProps} placement="hero" size="lg" />
-                  {priceField ? (
-                    <div className="inline-flex flex-col items-start">
-                      <span className="text-xs text-slate-500">{priceField.label}</span>
-                      <span className="text-2xl font-bold text-brand-darker leading-tight">
-                        {priceField.value}
-                      </span>
-                    </div>
-                  ) : null}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
-              {/* Image column */}
-              <div data-reveal="out" className="relative">
-                {/* Decorative gold ring + soft glow behind image */}
-                <div
-                  className="absolute -inset-3 sm:-inset-5 rounded-[2rem] bg-gradient-to-br from-gold/30 via-transparent to-brand/20 blur-2xl opacity-60"
-                  aria-hidden="true"
-                />
-                <div className="relative aspect-[4/3] sm:aspect-[16/11] rounded-[1.75rem] overflow-hidden bg-emerald-rich shadow-lift ring-1 ring-brand-dark/15">
-                  {course.heroImageUrl ? (
-                    <>
-                      <Image
-                        src={course.heroImageUrl}
-                        alt={course.title}
-                        fill
-                        priority
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" aria-hidden="true" />
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-pattern-arabesque text-white/70 text-lg">
-                      تصویر دستیاب نہیں
-                    </div>
-                  )}
+              {/* Price + Duration — big, inline, label and value side by side */}
+              {(priceField || durationField) ? (
+                <div data-reveal="out" className="flex flex-col items-center gap-3 sm:gap-4">
+                  {priceField ? (
+                    <PriceLine label={priceField.label} value={priceField.value} accent="gold" />
+                  ) : null}
+                  {durationField ? (
+                    <PriceLine label={durationField.label} value={durationField.value} accent="brand" />
+                  ) : null}
                 </div>
+              ) : null}
+
+              {/* WhatsApp CTA — at the very end of the hero */}
+              <div data-reveal="out">
+                <WhatsAppButton {...ctaProps} placement="hero" size="lg" />
               </div>
             </div>
           </div>
 
-          {/* Decorative ornament between hero and next section */}
-          <div className="ornament pb-8" aria-hidden="true">
-            <SparkleIcon className="h-3.5 w-3.5 text-gold" />
-          </div>
+          <Divider />
         </section>
 
-        {/* ── FOR YOU ────────────────────────────────────────────────────────── */}
+        {/* ── FOR YOU ─────────────────────────────────────────────────── */}
         {course.showForYou && course.forYouPoints.length > 0 ? (
-          <section className="container-tight py-10 sm:py-14">
-            <h2
-              data-reveal="out"
-              className="heading-accent text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker mb-8"
-            >
-              {course.labelForYou}
-            </h2>
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {course.forYouPoints.map((p, i) => (
-                <li
-                  key={p.id}
-                  data-reveal="out"
-                  style={{ transitionDelay: `${Math.min(i * 60, 360)}ms` }}
-                  className="group flex items-start gap-3.5 rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200/60 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift hover:ring-brand/20"
-                >
-                  <span className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                    <CheckIcon className="h-5 w-5" />
-                  </span>
-                  <span className="text-base sm:text-lg leading-relaxed text-slate-800">{p.text}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <BulletGroupSection
+            heading={course.labelForYou}
+            items={course.forYouPoints}
+            tone="emerald"
+            renderIcon={() => <CheckIcon className="h-6 w-6" />}
+          />
         ) : null}
 
-        {/* ── NOT FOR YOU ────────────────────────────────────────────────────── */}
+        {/* ── NOT FOR YOU ─────────────────────────────────────────────── */}
         {course.showNotForYou && course.notForYouPoints.length > 0 ? (
-          <section className="container-tight py-6 sm:py-10">
-            <h2
-              data-reveal="out"
-              className="heading-accent text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker mb-8"
-            >
-              {course.labelNotForYou}
-            </h2>
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {course.notForYouPoints.map((p, i) => (
-                <li
-                  key={p.id}
-                  data-reveal="out"
-                  style={{ transitionDelay: `${Math.min(i * 60, 360)}ms` }}
-                  className="flex items-start gap-3.5 rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200/60"
-                >
-                  <span className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-rose-50 text-rose-600 ring-1 ring-rose-200">
-                    <XIcon className="h-5 w-5" />
-                  </span>
-                  <span className="text-base sm:text-lg leading-relaxed text-slate-700">{p.text}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <BulletGroupSection
+            heading={course.labelNotForYou}
+            items={course.notForYouPoints}
+            tone="rose"
+            renderIcon={() => <XIcon className="h-6 w-6" />}
+          />
         ) : null}
 
-        {/* ── LEARN ─────────────────────────────────────────────────────────── */}
+        {/* ── LEARN ───────────────────────────────────────────────────── */}
         {course.showLearn && course.learningPoints.length > 0 ? (
-          <section className="relative py-12 sm:py-16">
+          <section className="relative py-14 sm:py-20">
             <div className="absolute inset-0 bg-pattern-dots opacity-50" aria-hidden="true" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-gold/40 to-transparent" aria-hidden="true" />
+
             <div className="relative container-tight">
-              <h2
-                data-reveal="out"
-                className="heading-accent text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker mb-8"
-              >
-                {course.labelLearn}
-              </h2>
-              <ul className="grid gap-4 sm:grid-cols-2">
+              <SectionHeading text={course.labelLearn} />
+              <ul className="mt-10 grid gap-5 sm:gap-6 sm:grid-cols-2">
                 {course.learningPoints.map((p, i) => (
                   <li
                     key={p.id}
                     data-reveal="out"
                     style={{ transitionDelay: `${Math.min(i * 60, 360)}ms` }}
-                    className="group relative flex items-start gap-3.5 rounded-2xl bg-gradient-to-br from-brand/5 to-cream p-5 ring-1 ring-brand/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow"
+                    className="group relative flex flex-col items-center gap-4 rounded-3xl bg-gradient-to-br from-brand/5 to-cream p-7 ring-1 ring-brand/15 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow"
                   >
-                    <span className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-brand text-white shadow-glow">
-                      <CheckIcon className="h-5 w-5" />
+                    <span className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-rich text-white shadow-glow ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110">
+                      <CheckIcon className="h-7 w-7" />
                     </span>
-                    <span className="text-base sm:text-lg leading-relaxed text-slate-800">{p.text}</span>
+                    <p className="text-base sm:text-lg leading-loose text-slate-800">{p.text}</p>
                   </li>
                 ))}
               </ul>
@@ -290,45 +265,43 @@ export default async function CourseLandingPage({ params }: PageProps) {
           </section>
         ) : null}
 
-        {/* ── DETAILS CARD ──────────────────────────────────────────────────── */}
+        {/* ── DETAILS CARD ────────────────────────────────────────────── */}
         {course.showDetails && course.detailFields.length > 0 ? (
-          <section className="container-tight py-10 sm:py-14">
+          <section className="container-tight py-12 sm:py-16">
             <div
               data-reveal="out"
-              className="relative overflow-hidden rounded-[2rem] bg-emerald-rich text-white p-7 sm:p-10 shadow-lift ring-1 ring-brand-darker/20"
+              className="relative overflow-hidden rounded-[2rem] bg-emerald-rich p-8 sm:p-12 text-white shadow-lift ring-1 ring-brand-darker/20"
             >
-              {/* Pattern overlay */}
               <div className="absolute inset-0 bg-pattern-arabesque opacity-30" aria-hidden="true" />
-              <div
-                className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gold/15 blur-3xl"
-                aria-hidden="true"
-              />
-              <div
-                className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-emerald-300/10 blur-3xl"
-                aria-hidden="true"
-              />
+              <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gold/20 blur-3xl animate-drift-a" aria-hidden="true" />
+              <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-emerald-300/15 blur-3xl animate-drift-b" aria-hidden="true" />
 
-              <div className="relative">
-                <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3.5 py-1 text-xs sm:text-sm text-gold-soft mb-4">
+              <div className="relative flex flex-col items-center text-center">
+                <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3.5 py-1 text-xs sm:text-sm text-gold-soft mb-5">
                   <ShieldCheckIcon className="h-4 w-4" />
                   <span>تصدیق شدہ</span>
                 </div>
-                <h2 className="text-2xl sm:text-4xl font-semibold mb-7">{course.labelDetails}</h2>
+                <h2 className="text-3xl sm:text-4xl font-semibold mb-2">{course.labelDetails}</h2>
+                <div className="ornament my-6 sm:my-8" aria-hidden="true">
+                  <SparkleIcon className="h-3.5 w-3.5 text-gold-light" />
+                </div>
 
-                <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                <dl className="grid w-full gap-y-6 sm:gap-y-7 sm:grid-cols-2 sm:gap-x-10">
                   {course.detailFields.map((f) => (
                     <div
                       key={f.id}
-                      className={`${f.isPrice ? "sm:col-span-2 rounded-2xl bg-white/10 p-4 ring-1 ring-white/15" : "border-b border-white/10 pb-4"}`}
+                      className={`flex flex-col items-center gap-1.5 ${
+                        f.isPrice ? "sm:col-span-2 rounded-2xl bg-white/8 ring-1 ring-white/15 px-5 py-5 sm:py-6" : ""
+                      }`}
                     >
-                      <dt className="text-white/70 text-xs sm:text-sm uppercase tracking-wide mb-1">
+                      <dt className="text-white/60 text-xs sm:text-sm uppercase tracking-[0.18em]">
                         {f.label}
                       </dt>
                       <dd
                         className={
                           f.isPrice
                             ? "text-3xl sm:text-5xl font-bold text-shimmer"
-                            : "text-lg sm:text-xl font-semibold"
+                            : "text-xl sm:text-2xl font-semibold"
                         }
                       >
                         {f.value}
@@ -336,107 +309,110 @@ export default async function CourseLandingPage({ params }: PageProps) {
                     </div>
                   ))}
                 </dl>
-              </div>
-            </div>
 
-            <div className="mt-7 flex justify-center">
-              <WhatsAppButton {...ctaProps} placement="after-details" size="lg" />
+                <div className="mt-10">
+                  <WhatsAppButton {...ctaProps} placement="after-details" size="lg" />
+                </div>
+              </div>
             </div>
           </section>
         ) : null}
 
-        {/* ── INSTRUCTOR ────────────────────────────────────────────────────── */}
+        {/* ── INSTRUCTOR ──────────────────────────────────────────────── */}
         {course.showInstructor && course.instructor ? (
-          <section className="container-tight py-10 sm:py-14">
-            <h2
-              data-reveal="out"
-              className="heading-accent text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker mb-8"
-            >
-              {course.labelInstructor}
-            </h2>
+          <section className="container-tight py-12 sm:py-16">
+            <SectionHeading text={course.labelInstructor} />
+
             <div
               data-reveal="out"
-              className="relative overflow-hidden rounded-3xl bg-white p-6 sm:p-8 shadow-lift ring-1 ring-slate-200/60"
+              className="relative mt-10 overflow-hidden rounded-3xl bg-white p-7 sm:p-10 shadow-lift ring-1 ring-slate-200/60"
             >
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-gold via-gold-light to-gold" aria-hidden="true" />
-              <div className="flex flex-col sm:flex-row gap-7 items-start">
-                <div className="relative flex-shrink-0">
+              <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold/10 blur-3xl" aria-hidden="true" />
+              <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
+
+              <div className="relative flex flex-col items-center gap-6">
+                {/* Photo */}
+                <div className="relative">
                   <div
                     className="absolute -inset-2 rounded-full bg-gradient-to-br from-gold/40 to-brand/30 blur-md opacity-70"
                     aria-hidden="true"
                   />
                   {course.instructor.photoUrl ? (
-                    <div className="relative h-32 w-32 sm:h-36 sm:w-36 overflow-hidden rounded-full ring-4 ring-white shadow-lift bg-slate-100">
+                    <div className="relative h-36 w-36 sm:h-44 sm:w-44 overflow-hidden rounded-full ring-4 ring-white shadow-lift bg-slate-100">
                       <Image
                         src={course.instructor.photoUrl}
                         alt={course.instructor.name}
                         fill
-                        sizes="144px"
+                        sizes="176px"
                         className="object-cover"
                       />
                     </div>
                   ) : (
-                    <div className="relative grid h-32 w-32 sm:h-36 sm:w-36 place-items-center rounded-full bg-emerald-rich text-white text-4xl font-bold ring-4 ring-white shadow-lift">
+                    <div className="relative grid h-36 w-36 sm:h-44 sm:w-44 place-items-center rounded-full bg-emerald-rich text-white text-5xl font-bold ring-4 ring-white shadow-lift">
                       {course.instructor.name.charAt(0)}
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-2xl sm:text-3xl font-semibold text-brand-darker mb-3">
-                    {course.instructor.name}
-                  </h3>
-                  <div className="space-y-3 text-slate-700 leading-loose mb-5">
-                    {course.instructor.bio.split("\n").filter(Boolean).map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
-                  </div>
-                  {Array.isArray(course.instructor.credibilityPoints) &&
-                  course.instructor.credibilityPoints.length > 0 ? (
-                    <ul className="grid gap-2.5 sm:grid-cols-2">
-                      {(course.instructor.credibilityPoints as string[]).map((cp, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-slate-700">
-                          <span className="grid h-6 w-6 flex-shrink-0 place-items-center rounded-md bg-brand/10 text-brand mt-0.5">
-                            <CheckIcon className="h-3.5 w-3.5" />
-                          </span>
-                          <span>{cp}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
+
+                <h3 className="text-2xl sm:text-3xl font-semibold text-brand-darker">
+                  {course.instructor.name}
+                </h3>
+
+                {/* Bio */}
+                <div className="mx-auto max-w-2xl space-y-3 text-slate-700 leading-loose">
+                  {course.instructor.bio.split("\n").filter(Boolean).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
                 </div>
+
+                {/* Credibility points */}
+                {Array.isArray(course.instructor.credibilityPoints) &&
+                course.instructor.credibilityPoints.length > 0 ? (
+                  <ul className="mx-auto grid max-w-2xl w-full gap-3 sm:grid-cols-2 mt-2">
+                    {(course.instructor.credibilityPoints as string[]).map((cp, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center justify-center gap-2.5 rounded-2xl bg-cream-dark/40 px-4 py-3 text-slate-700 ring-1 ring-brand/10"
+                      >
+                        <span className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-md bg-brand/15 text-brand">
+                          <CheckIcon className="h-4 w-4" />
+                        </span>
+                        <span className="text-sm sm:text-base">{cp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             </div>
           </section>
         ) : null}
 
-        {/* ── TESTIMONIALS ──────────────────────────────────────────────────── */}
+        {/* ── TESTIMONIALS ────────────────────────────────────────────── */}
         {course.showTestimonials && course.testimonials.length > 0 ? (
-          <section className="relative py-12 sm:py-16">
+          <section className="relative py-14 sm:py-20">
             <div className="absolute inset-0 bg-pattern-dots opacity-40" aria-hidden="true" />
+
             <div className="relative container-wide">
-              <div className="mb-10 text-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-white/70 backdrop-blur-sm px-3.5 py-1 text-xs text-gold-deep shadow-soft mb-3">
-                  <UsersIcon className="h-3.5 w-3.5" />
-                  <span>طلباء کی آراء</span>
-                </div>
-                <h2
-                  data-reveal="out"
-                  className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker"
-                >
-                  {course.labelTestimonials}
-                </h2>
-              </div>
-              <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <SectionHeading text={course.labelTestimonials} />
+
+              <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {course.testimonials.map((t, i) => (
                   <figure
                     key={t.id}
                     data-reveal="out"
                     style={{ transitionDelay: `${Math.min(i * 80, 480)}ms` }}
-                    className="group relative flex flex-col rounded-3xl bg-white p-6 sm:p-7 shadow-soft ring-1 ring-slate-200/60 transition-all duration-200 hover:-translate-y-1 hover:shadow-lift hover:ring-brand/15"
+                    className="group relative flex flex-col items-center text-center rounded-3xl bg-white px-6 pt-10 pb-7 shadow-soft ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift hover:ring-brand/15"
                   >
-                    <QuoteIcon className="absolute right-5 top-5 h-9 w-9 text-gold/25" />
+                    {/* Quote mark on top, centered */}
+                    <span
+                      className="absolute -top-5 left-1/2 -translate-x-1/2 grid h-10 w-10 place-items-center rounded-full bg-emerald-rich text-gold-soft shadow-glow ring-4 ring-cream"
+                    >
+                      <QuoteIcon className="h-5 w-5" />
+                    </span>
+
                     {t.rating ? (
-                      <div className="mb-3 flex gap-0.5">
+                      <div className="mb-4 flex justify-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, idx) => (
                           <StarIcon
                             key={idx}
@@ -445,22 +421,22 @@ export default async function CourseLandingPage({ params }: PageProps) {
                         ))}
                       </div>
                     ) : null}
-                    <blockquote className="flex-1 text-slate-700 leading-loose mb-5">
+
+                    <blockquote className="flex-1 text-slate-700 leading-loose mb-6">
                       {t.text}
                     </blockquote>
-                    <figcaption className="flex items-center gap-3 border-t border-slate-100 pt-4">
+
+                    <figcaption className="flex flex-col items-center gap-2 border-t border-slate-100 pt-5 w-full">
                       {t.photoUrl ? (
-                        <div className="relative h-11 w-11 overflow-hidden rounded-full ring-2 ring-cream-dark bg-slate-100">
-                          <Image src={t.photoUrl} alt={t.name} fill sizes="44px" className="object-cover" />
+                        <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-cream-dark bg-slate-100">
+                          <Image src={t.photoUrl} alt={t.name} fill sizes="48px" className="object-cover" />
                         </div>
                       ) : (
-                        <div className="grid h-11 w-11 place-items-center rounded-full bg-emerald-rich text-white font-bold ring-2 ring-cream-dark">
+                        <div className="grid h-12 w-12 place-items-center rounded-full bg-emerald-rich text-white font-bold ring-2 ring-cream-dark">
                           {t.name.charAt(0)}
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-brand-darker truncate">{t.name}</div>
-                      </div>
+                      <div className="font-semibold text-brand-darker">{t.name}</div>
                     </figcaption>
                   </figure>
                 ))}
@@ -469,35 +445,28 @@ export default async function CourseLandingPage({ params }: PageProps) {
           </section>
         ) : null}
 
-        {/* ── FAQS ──────────────────────────────────────────────────────────── */}
+        {/* ── FAQS ────────────────────────────────────────────────────── */}
         {course.showFaqs && course.faqs.length > 0 ? (
-          <section className="container-tight py-10 sm:py-14">
-            <div className="mb-8 text-center sm:text-right">
-              <h2
-                data-reveal="out"
-                className="heading-accent text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker"
-              >
-                {course.labelFaqs}
-              </h2>
-            </div>
-            <div data-reveal="out">
+          <section className="container-tight py-12 sm:py-16">
+            <SectionHeading text={course.labelFaqs} />
+            <div data-reveal="out" className="mt-10">
               <FaqAccordion items={course.faqs.map((f) => ({ id: f.id, question: f.question, answer: f.answer }))} />
             </div>
           </section>
         ) : null}
 
-        {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
-        <section className="container-tight py-12 sm:py-16">
+        {/* ── FINAL CTA ───────────────────────────────────────────────── */}
+        <section className="container-tight py-14 sm:py-20">
           <div
             data-reveal="out"
-            className="relative overflow-hidden rounded-[2rem] bg-cta-rich text-white p-9 sm:p-14 text-center shadow-lift ring-1 ring-brand-darker/30"
+            className="relative overflow-hidden rounded-[2rem] bg-cta-rich p-10 sm:p-16 text-center text-white shadow-lift ring-1 ring-brand-darker/30"
           >
             <div className="absolute inset-0 bg-pattern-arabesque opacity-25" aria-hidden="true" />
-            <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-gold/10 blur-3xl" aria-hidden="true" />
-            <div className="absolute -bottom-32 -right-20 h-72 w-72 rounded-full bg-emerald-300/10 blur-3xl" aria-hidden="true" />
+            <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-gold/15 blur-3xl animate-drift-a" aria-hidden="true" />
+            <div className="absolute -bottom-32 -right-20 h-80 w-80 rounded-full bg-emerald-300/15 blur-3xl animate-drift-b" aria-hidden="true" />
 
             <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white/5 px-4 py-1.5 text-xs sm:text-sm text-gold-soft mb-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white/5 px-4 py-1.5 text-xs sm:text-sm text-gold-soft mb-6">
                 <SparkleIcon className="h-4 w-4" />
                 <span>محدود نشستیں</span>
               </div>
@@ -505,10 +474,13 @@ export default async function CourseLandingPage({ params }: PageProps) {
                 {course.ctaHeading || course.labelFinalCta}
               </h2>
               {course.ctaSubtext ? (
-                <p className="mx-auto max-w-2xl text-lg sm:text-xl text-emerald-50/90 mb-8 leading-relaxed">
+                <p className="mx-auto max-w-2xl text-lg sm:text-xl text-emerald-50/90 mb-8 leading-loose">
                   {course.ctaSubtext}
                 </p>
               ) : null}
+              <div className="ornament mb-8" aria-hidden="true">
+                <SparkleIcon className="h-3.5 w-3.5 text-gold-light" />
+              </div>
               <div className="flex justify-center">
                 <WhatsAppButton {...ctaProps} placement="final" size="lg" />
               </div>
@@ -520,5 +492,96 @@ export default async function CourseLandingPage({ params }: PageProps) {
       <SiteFooter settings={settings} />
       <StickyMobileCTA {...ctaProps} />
     </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Helper components — kept inline to keep the route file self-contained.
+   ───────────────────────────────────────────────────────────────────── */
+
+/** Big inline label/value pair used in the hero (price, duration). */
+function PriceLine({ label, value, accent }: { label: string; value: string; accent: "gold" | "brand" }) {
+  const labelColor = accent === "gold" ? "text-gold-deep" : "text-brand";
+  const valueColor = accent === "gold" ? "text-brand-darker" : "text-brand-darker";
+  return (
+    <div className="inline-flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 text-2xl sm:text-3xl">
+      <span className={`font-medium ${labelColor}`}>{label}</span>
+      <span className={`font-bold ${valueColor}`}>{value}</span>
+    </div>
+  );
+}
+
+/** Centered section heading with a gold underline. */
+function SectionHeading({ text }: { text: string }) {
+  return (
+    <div className="flex flex-col items-center" data-reveal="out">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-brand-darker">
+        {text}
+      </h2>
+      <span
+        className="mt-3 h-[3px] w-20 rounded-full bg-gradient-to-l from-gold/30 via-gold to-gold/30"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
+/** Decorative divider used between hero and the first section. */
+function Divider() {
+  return (
+    <div className="relative pb-4">
+      <div className="ornament" aria-hidden="true">
+        <SparkleIcon className="h-3.5 w-3.5 text-gold" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Generic centered-card section used for the For-You / Not-For-You bullet
+ * lists. Each bullet renders as a vertical stack — icon on top, text below
+ * — so Urdu Nastaliq text sits in its own block without being squeezed
+ * against an icon to the side.
+ */
+function BulletGroupSection({
+  heading,
+  items,
+  tone,
+  renderIcon,
+}: {
+  heading: string;
+  items: { id: string; text: string }[];
+  tone: "emerald" | "rose";
+  renderIcon: () => React.ReactNode;
+}) {
+  const iconBox =
+    tone === "emerald"
+      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+      : "bg-rose-50 text-rose-600 ring-rose-200";
+  const ringHover =
+    tone === "emerald"
+      ? "hover:ring-emerald-300/60 hover:shadow-glow"
+      : "hover:ring-rose-300/60 hover:shadow-lift";
+  return (
+    <section className="container-tight py-12 sm:py-16">
+      <SectionHeading text={heading} />
+      <ul className="mt-10 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        {items.map((p, i) => (
+          <li
+            key={p.id}
+            data-reveal="out"
+            style={{ transitionDelay: `${Math.min(i * 60, 360)}ms` }}
+            className={`group flex flex-col items-center gap-4 rounded-3xl bg-white p-7 shadow-soft ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-1 ${ringHover}`}
+          >
+            <span
+              className={`grid h-14 w-14 place-items-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-110 ${iconBox}`}
+            >
+              {renderIcon()}
+            </span>
+            <p className="text-base sm:text-lg leading-loose text-slate-800">{p.text}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
