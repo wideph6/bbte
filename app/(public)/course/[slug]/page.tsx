@@ -159,7 +159,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
                     className="absolute -inset-4 sm:-inset-6 rounded-[2.5rem] bg-gradient-to-br from-gold/35 via-transparent to-brand/30 blur-2xl opacity-70"
                     aria-hidden="true"
                   />
-                  <div className="relative aspect-[4/3] sm:aspect-[16/11] overflow-y-auto scrollbar-hide rounded-[2rem] bg-emerald-rich shadow-lift ring-1 ring-brand-dark/15">
+                  <div data-image-scroll className="relative aspect-[4/3] sm:aspect-[16/11] overflow-y-auto scrollbar-hide rounded-[2rem] bg-emerald-rich shadow-lift ring-1 ring-brand-dark/15">
                     {course.heroImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -478,10 +478,10 @@ export default async function CourseLandingPage({ params }: PageProps) {
         ) : null}
 
         {/* ── FINAL CTA ───────────────────────────────────────────────── */}
-        <section className="container-tight py-14 sm:py-20">
+        <section className="container-wide py-10 sm:py-14">
           <div
             data-reveal="out"
-            className="relative overflow-hidden rounded-[2rem] bg-cta-rich p-10 sm:p-16 text-center text-white shadow-lift ring-1 ring-brand-darker/30"
+            className="relative overflow-hidden rounded-[2rem] bg-cta-rich p-6 sm:p-10 text-center text-white shadow-lift ring-1 ring-brand-darker/30"
           >
             <div className="absolute inset-0 bg-pattern-arabesque opacity-25" aria-hidden="true" />
             <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-gold/15 blur-3xl animate-drift-a" aria-hidden="true" />
@@ -490,11 +490,11 @@ export default async function CourseLandingPage({ params }: PageProps) {
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-gold/40 via-gold to-gold/40" aria-hidden="true" />
 
             <div className="relative">
-              <div className="inline-flex items-center gap-3 rounded-2xl border border-gold/50 bg-gold/10 px-6 py-4 text-base sm:text-lg font-medium text-gold-soft mb-6 max-w-2xl">
+              <div className="inline-flex items-center gap-3 rounded-2xl border border-gold/50 bg-gold/10 px-6 py-4 text-base sm:text-lg font-medium text-gold-soft mb-5 w-full max-w-3xl">
                 <SparkleIcon className="h-6 w-6 flex-shrink-0" />
-                <span>سعودی عرب میں دن بدن ہونے والی سختی کی وجہ سے جلد از جلد اپنا ٹینکیکل ڈپلومہ حاصل کرنا چاہیے۔</span>
+                <span>سعودی عرب میں دن بدن ہونے والی سختی کی وجہ سے جلد از جلد اپنا ٹیکنیکل ڈپلومہ حاصل کرنا چاہیے۔</span>
               </div>
-              <h2 className="display text-lg sm:text-xl font-normal mb-4 leading-snug text-white/80">
+              <h2 className="display text-sm sm:text-base font-normal mb-4 leading-snug text-white/60">
                 {course.ctaHeading || ensureUrdu(course.labelFinalCta, "labelFinalCta")}
               </h2>
               {course.ctaSubtext ? (
@@ -502,7 +502,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
                   {course.ctaSubtext}
                 </p>
               ) : null}
-              <div className="ornament mb-8" aria-hidden="true">
+              <div className="ornament mb-5" aria-hidden="true">
                 <SparkleIcon className="h-3.5 w-3.5 text-gold-light" />
               </div>
               <div className="flex flex-col items-center gap-4">

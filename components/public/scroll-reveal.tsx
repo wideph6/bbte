@@ -181,23 +181,25 @@ export function ScrollReveal() {
        When the scrollable image box is already at its top/bottom boundary
        and the user keeps scrolling, forward the remaining delta to the page
        so the visitor isn't trapped inside the image container.             */
-    const imageBox = document.querySelector<HTMLElement>(
-      ".overflow-y-auto.scrollbar-hide"
-    );
+    const imageBox = document.querySelector<HTMLElement>("[data-image-scroll]");
     if (imageBox) {
       const onWheel = (e: WheelEvent) => {
-        const atTop    = imageBox.scrollTop <= 0;
-        const atBottom =
-          imageBox.scrollTop + imageBox.clientHeight >= imageBox.scrollHeight - 1;
-        if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
-          e.preventDefault();
-          // Normalize deltaMode: 0=pixels, 1=lines, 2=pages
-          let delta = e.deltaY;
-          if (e.deltaMode === 1) delta *= 32;
-          else if (e.deltaMode === 2) delta *= window.innerHeight;
-          // Instant scroll — no "smooth" to avoid animation conflicts on rapid events
-          window.scrollBy(0, delta);
-        }
+        const canScrollDown =
+          imageBox.scrollHeight > imageBox.clientHeight &&
+          imageBox.scrollTop + imageBox.clientHeight < imageBox.scrollHeight - 2;
+        const canScrollUp =
+          imageBox.scrollHeight > imageBox.clientHeight && imageBox.scrollTop > 2;
+
+        // If the image box itself can still scroll in this direction — let it.
+        if (e.deltaY > 0 && canScrollDown) return;
+        if (e.deltaY < 0 && canScrollUp) return;
+
+        // Otherwise hand off to the page.
+        e.preventDefault();
+        let delta = e.deltaY;
+        if (e.deltaMode === 1) delta *= 32;
+        else if (e.deltaMode === 2) delta *= window.innerHeight;
+        window.scrollBy(0, delta);
       };
       imageBox.addEventListener("wheel", onWheel, { passive: false });
       cleanups.push(() => imageBox.removeEventListener("wheel", onWheel));
