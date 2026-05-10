@@ -186,12 +186,17 @@ export function ScrollReveal() {
     );
     if (imageBox) {
       const onWheel = (e: WheelEvent) => {
-        const atTop    = imageBox.scrollTop === 0;
+        const atTop    = imageBox.scrollTop <= 0;
         const atBottom =
           imageBox.scrollTop + imageBox.clientHeight >= imageBox.scrollHeight - 1;
         if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
           e.preventDefault();
-          window.scrollBy({ top: e.deltaY, behavior: "smooth" });
+          // Normalize deltaMode: 0=pixels, 1=lines, 2=pages
+          let delta = e.deltaY;
+          if (e.deltaMode === 1) delta *= 32;
+          else if (e.deltaMode === 2) delta *= window.innerHeight;
+          // Instant scroll — no "smooth" to avoid animation conflicts on rapid events
+          window.scrollBy(0, delta);
         }
       };
       imageBox.addEventListener("wheel", onWheel, { passive: false });
