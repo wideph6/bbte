@@ -457,55 +457,62 @@ export default async function CourseLandingPage({ params }: PageProps) {
         ) : null}
 
         {/* ── TESTIMONIALS ────────────────────────────────────────────── */}
-        {course.showTestimonials && course.testimonials.length > 0 ? (
-          <section className="relative py-14 sm:py-20">
-            <div className="absolute inset-0 bg-pattern-dots opacity-40" aria-hidden="true" />
+        {course.showTestimonials && course.testimonials.filter(t =>
+          t.name !== "Name" && t.text !== "Testimonial text"
+        ).length > 0 ? (
+          <section className="relative py-14 sm:py-20 bg-gradient-to-b from-brand-tint/40 to-transparent">
+            <div className="absolute inset-0 bg-pattern-dots opacity-30" aria-hidden="true" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-gold/30 to-transparent" aria-hidden="true" />
 
             <div className="relative container-wide">
               <SectionHeading text={ensureUrdu(course.labelTestimonials, "labelTestimonials")} />
 
               <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {course.testimonials.map((t, i) => (
+                {course.testimonials.filter(t =>
+                  t.name !== "Name" && t.text !== "Testimonial text"
+                ).map((t, i) => (
                   <figure
                     key={t.id}
                     data-reveal="out"
                     style={{ transitionDelay: `${Math.min(i * 80, 480)}ms` }}
-                    className="group relative flex flex-col items-center text-center rounded-3xl bg-white px-6 pt-10 pb-7 shadow-soft ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift hover:ring-brand/15"
+                    className="group relative flex flex-col items-center text-center overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-2 hover:shadow-lift hover:ring-brand/20"
                   >
-                    {/* Quote mark on top, centered */}
-                    <span
-                      className="absolute -top-5 left-1/2 -translate-x-1/2 grid h-10 w-10 place-items-center rounded-full bg-emerald-rich text-gold-soft shadow-glow ring-4 ring-cream"
-                    >
-                      <QuoteIcon className="h-5 w-5" />
-                    </span>
-
-                    {t.rating ? (
-                      <div className="mb-4 flex justify-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, idx) => (
-                          <StarIcon
-                            key={idx}
-                            className={`h-4 w-4 ${idx < (t.rating ?? 0) ? "text-gold" : "text-slate-300"}`}
-                          />
-                        ))}
-                      </div>
-                    ) : null}
-
-                    <blockquote className="flex-1 text-slate-700 leading-loose mb-6">
-                      {t.text}
-                    </blockquote>
-
-                    <figcaption className="flex flex-col items-center gap-2 border-t border-slate-100 pt-5 w-full">
-                      {t.photoUrl ? (
-                        <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-cream-dark bg-slate-100">
-                          <Image src={t.photoUrl} alt={t.name} fill sizes="48px" className="object-cover" />
+                    {/* Dark green header with quote icon and stars */}
+                    <div className="w-full bg-emerald-rich px-6 pt-8 pb-7">
+                      <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-white/15 text-gold-soft ring-2 ring-white/20">
+                        <QuoteIcon className="h-6 w-6" />
+                      </span>
+                      {t.rating ? (
+                        <div className="flex justify-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <StarIcon
+                              key={idx}
+                              className={`h-4 w-4 ${idx < (t.rating ?? 0) ? "text-gold-soft" : "text-white/25"}`}
+                            />
+                          ))}
                         </div>
-                      ) : (
-                        <div className="grid h-12 w-12 place-items-center rounded-full bg-emerald-rich text-white font-bold ring-2 ring-cream-dark">
-                          {t.name.charAt(0)}
-                        </div>
-                      )}
-                      <div className="font-semibold text-brand-darker">{t.name}</div>
-                    </figcaption>
+                      ) : null}
+                    </div>
+
+                    {/* Body */}
+                    <div className="flex flex-1 flex-col px-6 pt-6 pb-7">
+                      <blockquote className="flex-1 text-slate-700 leading-loose mb-6 text-sm sm:text-base">
+                        {t.text}
+                      </blockquote>
+
+                      <figcaption className="flex flex-col items-center gap-2 border-t border-slate-100 pt-5 w-full">
+                        {t.photoUrl ? (
+                          <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-brand/20 bg-slate-100">
+                            <Image src={t.photoUrl} alt={t.name} fill sizes="48px" className="object-cover" />
+                          </div>
+                        ) : (
+                          <div className="grid h-12 w-12 place-items-center rounded-full bg-emerald-rich text-white font-bold ring-2 ring-brand/20">
+                            {t.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="font-semibold text-brand-darker">{t.name}</div>
+                      </figcaption>
+                    </div>
                   </figure>
                 ))}
               </div>
