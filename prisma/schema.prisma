@@ -59,14 +59,14 @@ model Course {
   ogImageUrl     String?
 
   // Section labels (Urdu, editable per course)
-  labelForYou       String @default("Yeh Course Aap Ke Liye Hai Agar...")
-  labelNotForYou    String @default("Yeh Course Aap Ke Liye Nahi Hai Agar...")
-  labelLearn        String @default("Aap Kya Seekhenge")
-  labelDetails      String @default("Course Ki Tafseelat")
-  labelInstructor   String @default("Aap Ke Ustad")
-  labelTestimonials String @default("Students Ke Tassurat")
-  labelFaqs         String @default("Aksar Puchhe Janay Walay Sawalat")
-  labelFinalCta     String @default("Abhi Apni Jagah Mehfooz Karein")
+  labelForYou       String @default("یہ کورس آپ کے لیے ہے اگر...")
+  labelNotForYou    String @default("یہ کورس آپ کے لیے نہیں ہے اگر...")
+  labelLearn        String @default("آپ کیا سیکھیں گے")
+  labelDetails      String @default("کورس کی تفصیلات")
+  labelInstructor   String @default("آپ کے استاد")
+  labelTestimonials String @default("طلباء کے تاثرات")
+  labelFaqs         String @default("اکثر پوچھے جانے والے سوالات")
+  labelFinalCta     String @default("ابھی اپنی جگہ محفوظ کریں")
 
   // Section visibility toggles
   showForYou       Boolean @default(true)
@@ -84,7 +84,7 @@ model Course {
   // Final CTA block
   ctaHeading     String?
   ctaSubtext     String?
-  ctaButtonLabel String  @default("WhatsApp Par Rabta Karein")
+  ctaButtonLabel String  @default("واٹس ایپ پر رابطہ کریں")
 
   instructorId String?
   instructor   Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
