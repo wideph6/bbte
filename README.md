@@ -26,15 +26,21 @@ admin panel for managing all content without touching code.
 ## 3. Supabase Setup (step-by-step)
 
 1. Create a new project at https://supabase.com.
-2. **Project Settings → Database**:
-   - Copy the **Connection pooling** string into `DATABASE_URL` (port 6543,
-     append `?pgbouncer=true`).
-   - Copy the **Direct connection** string into `DIRECT_URL` (port 5432).
-   - Both strings need the database password URL-encoded (e.g., `@` → `%40`).
-3. **Project Settings → API**:
+2. **Project Settings → Database → Connection string**. Use the **Pooler**
+   for *both* connection variables — Supabase's direct host
+   (`db.<project>.supabase.co`) is IPv6-only and is not reachable from
+   Vercel or most CI environments.
+   - **Transaction pooler** (port 6543) → `DATABASE_URL`
+     — append `?pgbouncer=true&connection_limit=1`.
+   - **Session pooler** (port 5432) → `DIRECT_URL` — used by Prisma
+     migrations.
+   - Replace `[YOUR-PASSWORD]` with the DB password (URL-encode special
+     characters, e.g. `@` → `%40`).
+3. **Project Settings → API** (or **API Keys** in newer UIs):
    - Copy the project URL → `NEXT_PUBLIC_SUPABASE_URL`.
-   - Copy the `anon` public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-   - Copy the `service_role` key → `SUPABASE_SERVICE_ROLE_KEY` (server-only).
+   - Copy the **Publishable** / `anon` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+   - Copy the **Secret** / `service_role` key → `SUPABASE_SERVICE_ROLE_KEY`
+     (server-only — never expose to the browser).
 4. **Storage**: create a new **public** bucket named `uploads`.
 5. Paste all values into `.env`.
 
@@ -104,15 +110,44 @@ same `event_id` (= our tracking UUID), Meta dedupes them automatically.
 ## 8. Deploying to Vercel
 
 1. Push to GitHub.
-2. Import the repo into Vercel.
-3. Add all environment variables from `.env` in the Vercel project settings.
-4. Deploy.
-5. After the first deploy, run `npx prisma migrate deploy` against the
-   production DB — easiest is to run it locally with the production
-   `DATABASE_URL` exported, or wire it into your build command:
-   `prisma migrate deploy && next build`.
-6. Update `next.config.js` `images.remotePatterns` if your Supabase bucket
-   uses a custom domain.
+2. Import the repo into Vercel — framework is auto-detected as Next.js.
+3. **Build & Output settings** — leave as defaults. The repo ships a
+   `vercel.json` with:
+   - **Build command:** `prisma generate && next build`
+   - **Install command:** `npm install`
+   - **Output directory:** (auto, `.next`)
+
+   Do **not** put `prisma migrate deploy` in the build command. Vercel's
+   build container can't always reach the database, and migrations should
+   not run on every deploy. Run them as a one-off step (see step 5).
+4. Add the following **environment variables** (Settings → Environment
+   Variables → Production + Preview + Development). Use the Supabase
+   **pooler** URLs — see section 3 above:
+
+   | Variable | Where to get it |
+   |---|---|
+   | `DATABASE_URL` | Supabase → Connection string → Transaction pooler (6543) |
+   | `DIRECT_URL` | Supabase → Connection string → Session pooler (5432) |
+   | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → API → Project URL |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → API → publishable / anon |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → API → secret / service_role |
+   | `ADMIN_EMAIL` | Whatever email you want to log in with |
+   | `ADMIN_PASSWORD` | Strong password (used by seed script) |
+   | `JWT_SECRET` | Long random string (≥ 32 chars) |
+   | `DEFAULT_WHATSAPP_NUMBER` | E.164 without `+`, e.g. `923001234567` |
+5. **First-time DB setup** — run migrations + seed once from your laptop
+   against the production DB:
+   ```bash
+   # In a fresh terminal, with the same .env values you put in Vercel:
+   npm run db:migrate    # applies prisma/migrations to Supabase
+   npm run seed          # creates admin user, settings row, demo course
+   ```
+   After this, every Vercel deploy is just `next build` — fast, no DB
+   contact during build.
+6. Click **Deploy**. Public site is at the Vercel URL; admin login is at
+   `/admin/login`.
+7. (Optional) Update `next.config.js` `images.remotePatterns` if your
+   Supabase bucket uses a custom domain.
 
 ## 9. Common Issues
 
@@ -130,6 +165,10 @@ same `event_id` (= our tracking UUID), Meta dedupes them automatically.
 - **`Tenant or user not found` on Prisma** — Your `DATABASE_URL` /
   `DIRECT_URL` are wrong. Use the exact strings from
   Project Settings → Database in Supabase, with the password URL-encoded.
+- **`P1001: Can't reach database server at db.<project>.supabase.co:5432`**
+  on Vercel build — you are pointing at Supabase's direct (IPv6-only)
+  host. Switch `DIRECT_URL` (and `DATABASE_URL`) to the Supabase
+  **pooler** host (`aws-0-<region>.pooler.supabase.com`). See section 3.
 
 ## File / folder map
 
