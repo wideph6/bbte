@@ -117,19 +117,12 @@ export default async function CourseLandingPage({ params }: PageProps) {
 
           <div className="relative container-tight pt-12 pb-14 sm:pt-20 sm:pb-20">
             <div className="mx-auto flex flex-col items-center gap-7 sm:gap-9">
-              {/* Sparkle ribbon */}
-              <div
-                data-reveal="out"
-                className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-white/70 backdrop-blur-sm px-4 py-1.5 text-sm text-gold-deep shadow-soft"
-              >
-                <SparkleIcon className="h-4 w-4 text-gold" />
-                <span className="tracking-wide">معیاری اور قابلِ اعتماد</span>
-              </div>
-
-              {/* Title */}
+              {/* Title — solid emerald colour (no background-clip:text on
+                  Nastaliq, since the clip mask drops dots/diacritics in
+                  many renderers). */}
               <h1
                 data-reveal="out"
-                className="display display-gradient text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight"
+                className="display text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight text-brand-darker"
               >
                 {course.title}
               </h1>
@@ -290,18 +283,22 @@ export default async function CourseLandingPage({ params }: PageProps) {
                   {course.detailFields.map((f) => (
                     <div
                       key={f.id}
-                      className={`flex flex-col items-center gap-1.5 ${
+                      className={`flex flex-col items-center gap-2 ${
                         f.isPrice ? "sm:col-span-2 rounded-2xl bg-white/8 ring-1 ring-white/15 px-5 py-5 sm:py-6" : ""
                       }`}
                     >
-                      <dt className="text-white/60 text-xs sm:text-sm uppercase tracking-[0.18em]">
+                      {/* Plain Urdu label — no uppercase / letter-spacing,
+                          which break Nastaliq joining. */}
+                      <dt className="text-white/70 text-base sm:text-lg">
                         {f.label}
                       </dt>
+                      {/* Solid colour values — avoid background-clip:text on
+                          Nastaliq because the clip mask drops dots/diacritics. */}
                       <dd
                         className={
                           f.isPrice
-                            ? "text-3xl sm:text-5xl font-bold text-shimmer"
-                            : "text-xl sm:text-2xl font-semibold"
+                            ? "text-3xl sm:text-5xl font-bold text-gold-soft"
+                            : "text-xl sm:text-2xl font-semibold text-white"
                         }
                       >
                         {f.value}
