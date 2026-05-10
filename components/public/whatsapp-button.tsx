@@ -104,7 +104,7 @@ export function WhatsAppButton({
   const sizeClasses =
     size === "lg"
       ? "h-[58px] px-8 text-lg rounded-2xl"
-      : "h-12 px-6 text-base rounded-xl";
+      : "min-h-[3rem] py-2 px-5 text-sm sm:text-base rounded-xl flex-wrap";
 
   const baseClasses =
     variant === "outline"

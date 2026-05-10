@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(git commit -m ' *)",
+      "Bash(git ls-remote *)",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(48\\).toString\\('base64url'\\)\\)\")"
+    ]
+  }
+}

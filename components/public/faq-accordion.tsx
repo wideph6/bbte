@@ -23,15 +23,18 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
                 : "border-slate-200 shadow-soft hover:border-brand/20 hover:shadow-lift"
             }`}
           >
-            {/* 3-column layout: chevron | centered question | spacer.
-                The spacer matches the chevron's width so the question text
-                is visually centered relative to the card, not pushed off
-                center by the chevron sitting on one side. */}
             <button
               onClick={() => setOpen(isOpen ? null : it.id)}
-              className="grid w-full grid-cols-[2.25rem_1fr_2.25rem] items-center gap-4 px-5 py-5 sm:px-6"
+              className="grid w-full grid-cols-[1fr_auto] items-center gap-4 px-5 py-5 sm:px-6 text-right"
               aria-expanded={isOpen}
             >
+              <span
+                className={`text-right text-base sm:text-lg font-semibold transition-colors ${
+                  isOpen ? "text-brand-dark" : "text-slate-800"
+                }`}
+              >
+                {it.question}
+              </span>
               <span
                 className={`grid h-9 w-9 place-items-center rounded-full transition-all duration-300 ${
                   isOpen
@@ -42,14 +45,6 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
               >
                 <ChevronIcon className="h-4 w-4" />
               </span>
-              <span
-                className={`text-center text-base sm:text-lg font-semibold transition-colors ${
-                  isOpen ? "text-brand-dark" : "text-slate-800"
-                }`}
-              >
-                {it.question}
-              </span>
-              <span aria-hidden="true" />
             </button>
 
             <div
@@ -58,7 +53,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
               }`}
             >
               <div className="overflow-hidden">
-                <div className="px-6 pb-6 -mt-1 text-center text-slate-700 leading-loose">
+                <div className="px-6 pb-6 -mt-1 text-right text-slate-700 leading-loose">
                   {it.answer.split("\n").filter(Boolean).map((p, i) => (
                     <p key={i} className="mb-2 last:mb-0">
                       {p}

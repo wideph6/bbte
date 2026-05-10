@@ -31,7 +31,7 @@ const URDU_LABEL_DEFAULTS: Record<string, string> = {
   labelForYou:       "یہ کورس آپ کے لیے ہے اگر...",
   labelNotForYou:    "یہ کورس آپ کے لیے نہیں ہے اگر...",
   labelLearn:        "آپ کیا سیکھیں گے",
-  labelDetails:      "کورس کی تفصیلات",
+  labelDetails:      "ڈپلومہ کی تفصیلات",
   labelInstructor:   "آپ کے استاد",
   labelTestimonials: "طلباء کے تاثرات",
   labelFaqs:         "اکثر پوچھے جانے والے سوالات",
@@ -110,20 +110,11 @@ export default async function CourseLandingPage({ params }: PageProps) {
     pixelId: settings?.metaPixelId ?? null,
   };
 
-  // Surface price + duration in the hero as big inline label/value pairs.
-  // We keep order: price first (as the user requested), then any
-  // "duration"-shaped detail field. Detection is heuristic so the admin
-  // can keep the field labels in Urdu without us hardcoding them.
-  const priceField = course.detailFields.find((f) => f.isPrice) ?? null;
-  const durationField = course.detailFields.find((f) => {
-    if (f.isPrice) return false;
-    const label = f.label.toLowerCase();
-    return /muddat|duration|مدت|مُدّت|مدّت|عرصہ|مدت /.test(f.label) || /muddat|duration/.test(label);
-  });
-  const heroHighlights = course.detailFields
-    .filter((f) => !f.isPrice && f.id !== durationField?.id)
-    .filter((f) => f.value?.trim?.() !== "")
-    .slice(0, 3);
+  // Show all price fields and all non-price detail fields in the hero.
+  const priceFields = course.detailFields.filter((f) => f.isPrice);
+  const nonPriceFields = course.detailFields
+    .filter((f) => !f.isPrice)
+    .filter((f) => f.value?.trim?.() !== "");
 
   return (
     <>
@@ -142,7 +133,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
 
           <div className="relative container-wide pt-12 pb-14 sm:pt-20 sm:pb-20">
             <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
-              <div className="space-y-6 sm:space-y-8">
+              <div className="flex flex-col items-center text-center space-y-6 sm:space-y-8">
                 {/* Verified badge */}
                 <div
                   data-reveal="out"
@@ -171,22 +162,19 @@ export default async function CourseLandingPage({ params }: PageProps) {
                   </p>
                 ) : null}
 
-                {/* Price / duration highlights */}
-                {(priceField || durationField) ? (
-                  <div data-reveal="out" className="grid gap-3 sm:grid-cols-2">
-                    {priceField ? (
-                      <PriceLine label={priceField.label} value={priceField.value} accent="gold" />
-                    ) : null}
-                    {durationField ? (
-                      <PriceLine label={durationField.label} value={durationField.value} accent="brand" />
-                    ) : null}
+                {/* Price highlights — all isPrice fields */}
+                {priceFields.length > 0 ? (
+                  <div data-reveal="out" className="grid gap-3 sm:grid-cols-2 w-full">
+                    {priceFields.map((f, i) => (
+                      <PriceLine key={f.id} label={f.label} value={f.value} accent={i % 2 === 0 ? "gold" : "brand"} />
+                    ))}
                   </div>
                 ) : null}
 
-                {/* Extra detail highlights */}
-                {heroHighlights.length > 0 ? (
-                  <div data-reveal="out" className="grid gap-3 sm:grid-cols-2">
-                    {heroHighlights.map((f, i) => (
+                {/* Non-price detail highlights — all remaining fields */}
+                {nonPriceFields.length > 0 ? (
+                  <div data-reveal="out" className="grid gap-3 sm:grid-cols-2 w-full">
+                    {nonPriceFields.map((f, i) => (
                       <div
                         key={f.id}
                         style={{ transitionDelay: `${Math.min(i * 60, 240)}ms` }}
@@ -198,23 +186,6 @@ export default async function CourseLandingPage({ params }: PageProps) {
                     ))}
                   </div>
                 ) : null}
-
-                {/* Trust chips — recognition badges */}
-                <div data-reveal="out" className="flex flex-wrap justify-end gap-2">
-                  {[
-                    "سعودی انجینئرنگ کونسل سے منظور",
-                    "یو اے ای منسٹری آف ایجوکیشن سے تسلیم شدہ",
-                    "آن لائن رزلٹ",
-                  ].map((badge) => (
-                    <span
-                      key={badge}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-brand-tint px-3 py-1 text-xs font-medium text-brand-dark ring-1 ring-brand/20"
-                    >
-                      <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                      {badge}
-                    </span>
-                  ))}
-                </div>
 
                 {/* WhatsApp CTA */}
                 <div data-reveal="out">
@@ -314,7 +285,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
                     key={p.id}
                     data-reveal="out"
                     style={{ transitionDelay: `${Math.min(i * 60, 360)}ms` }}
-                    className="group relative flex flex-col gap-5 overflow-hidden rounded-3xl bg-white p-7 text-right shadow-soft ring-1 ring-brand/12 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-glow hover:ring-brand/30"
+                    className="group relative flex flex-col items-center gap-5 overflow-hidden rounded-3xl bg-white p-7 text-center shadow-soft ring-1 ring-brand/12 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-glow hover:ring-brand/30"
                   >
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-dark via-brand to-brand-light" aria-hidden="true" />
                     <span className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-rich text-white shadow-glow ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110">
@@ -428,7 +399,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
                 </h3>
 
                 {/* Bio */}
-                <div className="mx-auto max-w-2xl space-y-3 text-slate-700 leading-loose">
+                <div className="mx-auto max-w-2xl space-y-3 text-slate-700 leading-loose text-center">
                   {course.instructor.bio.split("\n").filter(Boolean).map((para, i) => (
                     <p key={i}>{para}</p>
                   ))}
@@ -670,7 +641,7 @@ function BulletGroupSection({
               key={p.id}
               data-reveal="out"
               style={{ transitionDelay: `${Math.min(i * 70, 420)}ms` }}
-              className={`group relative flex flex-col gap-5 overflow-hidden rounded-3xl bg-white p-7 text-right shadow-soft ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-1.5 ${cardHover}`}
+              className={`group relative flex flex-col items-center gap-5 overflow-hidden rounded-3xl bg-white p-7 text-center shadow-soft ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-1.5 ${cardHover}`}
             >
               {/* Coloured accent bar at the top */}
               <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${topBar}`} aria-hidden="true" />
