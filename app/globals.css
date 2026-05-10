@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: 248 250 252;
+  --color-fg: 15 23 42;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* Public site uses Urdu Nastaliq font and a comfortable line-height for RTL. */
+[lang="ur"] {
+  font-family: var(--font-urdu), "Noto Nastaliq Urdu", serif;
+  line-height: 2.1;
+  word-spacing: 0.05em;
+}
+
+[lang="ur"] h1,
+[lang="ur"] h2,
+[lang="ur"] h3 {
+  line-height: 1.8;
+}
+
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Numbers/English snippets inside Urdu blocks render in Inter for legibility. */
+[lang="ur"] .ltr,
+[lang="ur"] [dir="ltr"] {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+@layer utilities {
+  .container-narrow {
+    @apply mx-auto w-full max-w-3xl px-4 sm:px-6;
+  }
+  .container-wide {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+}

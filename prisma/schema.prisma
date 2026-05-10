@@ -1,0 +1,192 @@
+// Prisma schema for the multi-course Urdu landing site + admin panel.
+// Targets Supabase Postgres. DATABASE_URL = pooled (pgbouncer); DIRECT_URL = direct (for migrations).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Singleton row (id = 1). The seed script ensures it exists.
+model GlobalSettings {
+  id                      Int      @id @default(1)
+  logoUrl                 String?
+  siteTitle               String   @default("Urdu Courses")
+  tagline                 String?
+  whatsappNumber          String   @default("923001234567")
+  whatsappMessageTemplate String   @default("Salam, mujhe \"{course_name}\" course ke baare mein maloomat chahiye. Ref: {tracking_id}")
+  footerText              String?
+  socialLinks             Json?
+  metaPixelId             String?
+  metaCapiToken           String?
+  metaCapiTestCode        String?
+  ga4MeasurementId        String?
+  updatedAt               DateTime @updatedAt @default(now())
+}
+
+model Instructor {
+  id                String   @id @default(cuid())
+  name              String
+  photoUrl          String?
+  bio               String   @default("")
+  credibilityPoints Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  courses           Course[]
+}
+
+model Course {
+  id             String  @id @default(cuid())
+  slug           String  @unique
+  title          String
+  subHeadline    String?
+  heroImageUrl   String?
+  status         String  @default("draft") // draft | active
+  seoTitle       String?
+  seoDescription String?
+  ogImageUrl     String?
+
+  // Section labels (Urdu, editable per course)
+  labelForYou       String @default("Yeh Course Aap Ke Liye Hai Agar...")
+  labelNotForYou    String @default("Yeh Course Aap Ke Liye Nahi Hai Agar...")
+  labelLearn        String @default("Aap Kya Seekhenge")
+  labelDetails      String @default("Course Ki Tafseelat")
+  labelInstructor   String @default("Aap Ke Ustad")
+  labelTestimonials String @default("Students Ke Tassurat")
+  labelFaqs         String @default("Aksar Puchhe Janay Walay Sawalat")
+  labelFinalCta     String @default("Abhi Apni Jagah Mehfooz Karein")
+
+  // Section visibility toggles
+  showForYou       Boolean @default(true)
+  showNotForYou    Boolean @default(true)
+  showLearn        Boolean @default(true)
+  showDetails      Boolean @default(true)
+  showInstructor   Boolean @default(true)
+  showTestimonials Boolean @default(true)
+  showFaqs         Boolean @default(true)
+
+  // Per-course WhatsApp override (optional)
+  whatsappNumber   String?
+  whatsappTemplate String?
+
+  // Final CTA block
+  ctaHeading     String?
+  ctaSubtext     String?
+  ctaButtonLabel String  @default("WhatsApp Par Rabta Karein")
+
+  instructorId String?
+  instructor   Instructor? @relation(fields: [instructorId], references: [id], onDelete: SetNull)
+
+  forYouPoints    ForYouPoint[]
+  notForYouPoints NotForYouPoint[]
+  learningPoints  LearningPoint[]
+  detailFields    DetailField[]
+  testimonials    Testimonial[]
+  faqs            Faq[]
+  clicks          Click[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model ForYouPoint {
+  id       String @id @default(cuid())
+  text     String
+  order    Int    @default(0)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, order])
+}
+
+model NotForYouPoint {
+  id       String @id @default(cuid())
+  text     String
+  order    Int    @default(0)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, order])
+}
+
+model LearningPoint {
+  id       String @id @default(cuid())
+  text     String
+  order    Int    @default(0)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, order])
+}
+
+model DetailField {
+  id       String  @id @default(cuid())
+  label    String
+  value    String
+  order    Int     @default(0)
+  isPrice  Boolean @default(false)
+  courseId String
+  course   Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, order])
+}
+
+model Testimonial {
+  id       String  @id @default(cuid())
+  name     String
+  photoUrl String?
+  text     String
+  rating   Int?
+  order    Int     @default(0)
+  courseId String
+  course   Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, order])
+}
+
+model Faq {
+  id       String @id @default(cuid())
+  question String
+  answer   String
+  order    Int    @default(0)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, order])
+}
+
+model Click {
+  id               String   @id @default(cuid())
+  trackingId       String   @unique
+  courseId         String
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status           String   @default("new") // new | contacted | purchased | lost
+  phone            String?
+  notes            String?
+  amountPaid       Decimal? @db.Decimal(10, 2)
+  userAgent        String?
+  referrer         String?
+  ipAddress        String?
+  pixelEventSent   Boolean  @default(false)
+  capiLeadSent     Boolean  @default(false)
+  capiPurchaseSent Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([courseId, status])
+  @@index([createdAt])
+}
