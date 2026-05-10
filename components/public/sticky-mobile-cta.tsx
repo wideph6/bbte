@@ -4,8 +4,8 @@ import { WhatsAppButton, type WhatsAppButtonProps } from "./whatsapp-button";
 
 /**
  * Sticky bottom CTA for mobile only. Hides itself when any inline WhatsApp
- * button is in viewport so it doesn't double-up with the hero/details/final
- * CTAs already on screen.
+ * button is in viewport so it doesn't double-up with hero/details/final CTAs
+ * already on screen.
  */
 export function StickyMobileCTA(props: WhatsAppButtonProps) {
   const [show, setShow] = useState(false);
@@ -34,9 +34,17 @@ export function StickyMobileCTA(props: WhatsAppButtonProps) {
 
   return (
     <div
-      className={`sm:hidden fixed inset-x-0 bottom-0 z-40 transition-transform duration-200 ${show ? "translate-y-0" : "translate-y-full"}`}
+      className={`sm:hidden fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out ${
+        show ? "translate-y-0" : "translate-y-full"
+      }`}
+      aria-hidden={!show}
     >
-      <div className="bg-white/95 backdrop-blur border-t border-slate-200 p-3 shadow-2xl">
+      {/* Soft gradient fade above the bar so it floats over content. */}
+      <div
+        className="pointer-events-none h-6 bg-gradient-to-t from-cream/95 to-transparent"
+        aria-hidden="true"
+      />
+      <div className="border-t border-brand/10 bg-cream/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md shadow-[0_-12px_32px_rgba(2,44,34,0.12)]">
         <WhatsAppButton {...props} placement="sticky" size="md" className="w-full" />
       </div>
     </div>
