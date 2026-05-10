@@ -490,11 +490,11 @@ export default async function CourseLandingPage({ params }: PageProps) {
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-gold/40 via-gold to-gold/40" aria-hidden="true" />
 
             <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-gold/10 px-4 py-1.5 text-xs sm:text-sm font-medium text-gold-soft mb-6">
-                <SparkleIcon className="h-4 w-4" />
+              <div className="inline-flex items-center gap-3 rounded-2xl border border-gold/50 bg-gold/10 px-6 py-4 text-base sm:text-lg font-medium text-gold-soft mb-6 max-w-2xl">
+                <SparkleIcon className="h-6 w-6 flex-shrink-0" />
                 <span>سعودی عرب میں دن بدن ہونے والی سختی کی وجہ سے جلد از جلد اپنا ٹینکیکل ڈپلومہ حاصل کرنا چاہیے۔</span>
               </div>
-              <h2 className="display text-3xl sm:text-5xl font-normal mb-4 leading-tight">
+              <h2 className="display text-lg sm:text-xl font-normal mb-4 leading-snug text-white/80">
                 {course.ctaHeading || ensureUrdu(course.labelFinalCta, "labelFinalCta")}
               </h2>
               {course.ctaSubtext ? (
