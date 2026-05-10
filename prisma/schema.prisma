@@ -66,7 +66,7 @@ model Course {
   labelInstructor   String @default("آپ کے استاد")
   labelTestimonials String @default("طلباء کے تاثرات")
   labelFaqs         String @default("اکثر پوچھے جانے والے سوالات")
-  labelFinalCta     String @default("ابھی اپنی جگہ محفوظ کریں")
+  labelFinalCta     String @default("ڈپلومہ کے متعلق مزید معلومات کیلئے")
 
   // Section visibility toggles
   showForYou       Boolean @default(true)

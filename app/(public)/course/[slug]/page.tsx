@@ -35,7 +35,7 @@ const URDU_LABEL_DEFAULTS: Record<string, string> = {
   labelInstructor:   "آپ کے استاد",
   labelTestimonials: "طلباء کے تاثرات",
   labelFaqs:         "اکثر پوچھے جانے والے سوالات",
-  labelFinalCta:     "ابھی اپنی جگہ محفوظ کریں",
+  labelFinalCta:     "ڈپلومہ کے متعلق مزید معلومات کیلئے",
 };
 
 function ensureUrdu(value: string, key: string): string {
@@ -132,103 +132,48 @@ export default async function CourseLandingPage({ params }: PageProps) {
           <div className="absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-gold/15 blur-3xl animate-drift-b" aria-hidden="true" />
 
           <div className="relative container-wide pt-12 pb-14 sm:pt-20 sm:pb-20">
-            <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
-              <div className="flex flex-col items-center text-center space-y-6 sm:space-y-8">
-                {/* Verified badge */}
-                <div
+            <div className="flex flex-col items-center text-center gap-8 sm:gap-10">
+
+              {/* Title */}
+              <h1
+                data-reveal="out"
+                className="display text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight text-brand-darker max-w-4xl"
+              >
+                {course.title}
+              </h1>
+
+              {/* Subhead */}
+              {course.subHeadline ? (
+                <p
                   data-reveal="out"
-                  className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-white/80 px-4 py-1.5 text-xs sm:text-sm font-medium text-brand-dark shadow-soft backdrop-blur-sm"
+                  className="max-w-2xl text-lg sm:text-xl text-slate-700 leading-loose"
                 >
-                  <ShieldCheckIcon className="h-4 w-4 text-gold flex-shrink-0" />
-                  <span>{ensureUrdu(course.labelDetails, "labelDetails")}</span>
-                </div>
+                  {course.subHeadline}
+                </p>
+              ) : null}
 
-                {/* Title — solid emerald colour (no background-clip:text on
-                    Nastaliq; clip mask drops dots/diacritics in many renderers). */}
-                <h1
-                  data-reveal="out"
-                  className="display text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight text-brand-darker"
-                >
-                  {course.title}
-                </h1>
-
-                {/* Subhead */}
-                {course.subHeadline ? (
-                  <p
-                    data-reveal="out"
-                    className="max-w-2xl text-lg sm:text-xl text-slate-700 leading-loose"
-                  >
-                    {course.subHeadline}
-                  </p>
-                ) : null}
-
-                {/* Price highlights — all isPrice fields */}
-                {priceFields.length > 0 ? (
-                  <div data-reveal="out" className="grid gap-3 sm:grid-cols-2 w-full">
-                    {priceFields.map((f, i) => (
-                      <PriceLine key={f.id} label={f.label} value={f.value} accent={i % 2 === 0 ? "gold" : "brand"} />
-                    ))}
-                  </div>
-                ) : null}
-
-                {/* Non-price detail highlights — all remaining fields */}
-                {nonPriceFields.length > 0 ? (
-                  <div data-reveal="out" className="grid gap-3 sm:grid-cols-2 w-full">
-                    {nonPriceFields.map((f, i) => (
-                      <div
-                        key={f.id}
-                        style={{ transitionDelay: `${Math.min(i * 60, 240)}ms` }}
-                        className="rounded-2xl bg-white/80 px-4 py-3.5 shadow-soft ring-1 ring-brand/10 backdrop-blur-sm"
-                      >
-                        <div className="text-sm text-slate-500">{f.label}</div>
-                        <div className="text-lg sm:text-xl font-semibold text-brand-darker">{f.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-
-                {/* WhatsApp CTA */}
-                <div data-reveal="out">
-                  <WhatsAppButton {...ctaProps} placement="hero" size="lg" />
-                </div>
-              </div>
-
-              {/* Image — fixed-aspect box, scrollable inside (image scrolls
-                  vertically so the visitor can see it in full without the
-                  outer card growing). */}
-              <div data-reveal="out" className="w-full max-w-3xl justify-self-center lg:justify-self-start">
+              {/* Image — fixed-aspect box, scrollable inside */}
+              <div data-reveal="out" className="w-full max-w-3xl">
                 <div className="relative">
-                  {/* Glow halo behind the frame */}
                   <div
                     className="absolute -inset-4 sm:-inset-6 rounded-[2.5rem] bg-gradient-to-br from-gold/35 via-transparent to-brand/30 blur-2xl opacity-70"
                     aria-hidden="true"
                   />
-                  {/* Frame */}
                   <div className="relative aspect-[4/3] sm:aspect-[16/11] overflow-y-auto scrollbar-hide rounded-[2rem] bg-emerald-rich shadow-lift ring-1 ring-brand-dark/15">
                     {course.heroImageUrl ? (
-                      <>
-                        {/* Plain <img> + h-auto so the image renders at its
-                            natural aspect inside the fixed-height frame.
-                            If the image is taller than the frame, the
-                            container scrolls vertically. */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={course.heroImageUrl}
-                          alt={course.title}
-                          className="block w-full h-auto"
-                          loading="eager"
-                        />
-                      </>
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={course.heroImageUrl}
+                        alt={course.title}
+                        className="block w-full h-auto"
+                        loading="eager"
+                      />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center bg-pattern-arabesque text-white/70 text-lg">
                         تصویر دستیاب نہیں
                       </div>
                     )}
                   </div>
-                  {/* Scroll hint chevron + bottom fade — only meaningful
-                      when the image is taller than the frame. We always
-                      render it because there's no cheap way to detect
-                      overflow at SSR time, and it's harmless either way. */}
                   <div
                     className="pointer-events-none absolute inset-x-0 bottom-0 h-12 rounded-b-[2rem] bg-gradient-to-t from-black/40 to-transparent"
                     aria-hidden="true"
@@ -244,6 +189,37 @@ export default async function CourseLandingPage({ params }: PageProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Price highlights — all isPrice fields */}
+              {priceFields.length > 0 ? (
+                <div data-reveal="out" className="grid gap-3 sm:grid-cols-2 w-full max-w-2xl">
+                  {priceFields.map((f, i) => (
+                    <PriceLine key={f.id} label={f.label} value={f.value} accent={i % 2 === 0 ? "gold" : "brand"} />
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Non-price detail highlights — all remaining fields */}
+              {nonPriceFields.length > 0 ? (
+                <div data-reveal="out" className="grid gap-3 sm:grid-cols-2 w-full max-w-2xl">
+                  {nonPriceFields.map((f, i) => (
+                    <div
+                      key={f.id}
+                      style={{ transitionDelay: `${Math.min(i * 60, 240)}ms` }}
+                      className="rounded-2xl bg-white/80 px-4 py-3.5 shadow-soft ring-1 ring-brand/10 backdrop-blur-sm"
+                    >
+                      <div className="text-sm text-slate-500">{f.label}</div>
+                      <div className="text-lg sm:text-xl font-semibold text-brand-darker">{f.value}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* WhatsApp CTA — at the end of hero */}
+              <div data-reveal="out">
+                <WhatsAppButton {...ctaProps} placement="hero" size="lg" />
+              </div>
+
             </div>
           </div>
 
@@ -253,7 +229,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
         {/* ── FOR YOU ─────────────────────────────────────────────────── */}
         {course.showForYou && course.forYouPoints.length > 0 ? (
           <BulletGroupSection
-            heading={ensureUrdu(course.labelForYou, "labelForYou")}
+            heading={null}
             items={course.forYouPoints}
             tone="emerald"
             renderIcon={() => <CheckIcon className="h-6 w-6" />}
@@ -263,7 +239,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
         {/* ── NOT FOR YOU ─────────────────────────────────────────────── */}
         {course.showNotForYou && course.notForYouPoints.length > 0 ? (
           <BulletGroupSection
-            heading={ensureUrdu(course.labelNotForYou, "labelNotForYou")}
+            heading={null}
             items={course.notForYouPoints}
             tone="rose"
             renderIcon={() => <XIcon className="h-6 w-6" />}
@@ -516,7 +492,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-gold/10 px-4 py-1.5 text-xs sm:text-sm font-medium text-gold-soft mb-6">
                 <SparkleIcon className="h-4 w-4" />
-                <span>محدود نشستیں — ابھی اپنی جگہ بک کریں</span>
+                <span>سعودی عرب میں دن بدن ہونے والی سختی کی وجہ سے جلد از جلد اپنا ٹینکیکل ڈپلومہ حاصل کرنا چاہیے۔</span>
               </div>
               <h2 className="display text-3xl sm:text-5xl font-normal mb-4 leading-tight">
                 {course.ctaHeading || ensureUrdu(course.labelFinalCta, "labelFinalCta")}
@@ -531,7 +507,7 @@ export default async function CourseLandingPage({ params }: PageProps) {
               </div>
               <div className="flex flex-col items-center gap-4">
                 <WhatsAppButton {...ctaProps} placement="final" size="lg" />
-                <p className="text-xs text-white/50">درج سوالات بلکل مفت ہیں — کوئی لازمی نہیں</p>
+
               </div>
             </div>
           </div>
@@ -608,7 +584,7 @@ function BulletGroupSection({
   tone,
   renderIcon,
 }: {
-  heading: string;
+  heading: string | null;
   items: { id: string; text: string }[];
   tone: "emerald" | "rose";
   renderIcon: () => React.ReactNode;
@@ -634,8 +610,8 @@ function BulletGroupSection({
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-gold/20 to-transparent" aria-hidden="true" />
 
       <div className="relative container-tight">
-        <SectionHeading text={heading} />
-        <ul className="mt-10 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        {heading ? <SectionHeading text={heading} /> : null}
+        <ul className={`grid gap-5 sm:gap-6 sm:grid-cols-2 ${heading ? "mt-10" : ""}`}>
           {items.map((p, i) => (
             <li
               key={p.id}
