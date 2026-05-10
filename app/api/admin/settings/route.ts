@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { bustEverything } from "@/lib/revalidate";
 
 const schema = z.object({
   logoUrl: z.string().url().nullable().optional(),
@@ -47,5 +48,6 @@ export async function PATCH(req: NextRequest) {
     update,
     create,
   });
+  bustEverything();
   return NextResponse.json(updated);
 }

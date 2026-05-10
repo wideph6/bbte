@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isSection } from "@/lib/course-sections";
+import { bustCourse } from "@/lib/revalidate";
 
 const schema = z.object({ ids: z.array(z.string().min(1)) });
 
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string;
   await prisma.$transaction(
     parsed.data.ids.map((id, idx) => delegate.update({ where: { id }, data: { order: idx } }))
   );
+  const course = await prisma.course.findUnique({ where: { id: params.id }, select: { slug: true } });
+  bustCourse(course?.slug);
   return NextResponse.json({ ok: true });
 }
 

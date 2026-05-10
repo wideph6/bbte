@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { bustEverything } from "@/lib/revalidate";
 
 const schema = z.object({
   name: z.string().min(1).optional(),
@@ -24,10 +25,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       parsed.data.credibilityPoints === null ? Prisma.JsonNull : parsed.data.credibilityPoints;
   }
   const updated = await prisma.instructor.update({ where: { id: params.id }, data });
+  bustEverything();
   return NextResponse.json(updated);
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   await prisma.instructor.delete({ where: { id: params.id } });
+  bustEverything();
   return NextResponse.json({ ok: true });
 }

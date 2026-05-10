@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { bustHome } from "@/lib/revalidate";
 
 const schema = z.object({
   title: z.string().min(1),
@@ -35,5 +36,6 @@ export async function POST(req: NextRequest) {
       },
     },
   });
+  bustHome();
   return NextResponse.json(course);
 }

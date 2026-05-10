@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { bustCourse, bustHome } from "@/lib/revalidate";
 
 const schema = z.object({
   title: z.string().min(1).optional(),
@@ -51,10 +52,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
   const updated = await prisma.course.update({ where: { id: params.id }, data });
+  bustCourse(updated.slug);
   return NextResponse.json(updated);
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  await prisma.course.delete({ where: { id: params.id } });
+  const removed = await prisma.course.delete({ where: { id: params.id } });
+  bustCourse(removed.slug);
+  bustHome();
   return NextResponse.json({ ok: true });
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { bustCourse } from "@/lib/revalidate";
 
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   const c = await prisma.course.findUnique({ where: { id: params.id } });
@@ -8,5 +9,6 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     where: { id: c.id },
     data: { status: c.status === "active" ? "draft" : "active" },
   });
+  bustCourse(updated.slug);
   return NextResponse.json(updated);
 }

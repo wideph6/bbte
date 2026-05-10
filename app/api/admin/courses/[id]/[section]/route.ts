@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SECTIONS, isSection } from "@/lib/course-sections";
+import { bustCourse } from "@/lib/revalidate";
 
 export async function POST(req: NextRequest, { params }: { params: { id: string; section: string } }) {
   const { id, section } = params;
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string;
   const created = await def.delegate().create({
     data: { ...parsed.data, courseId: id, order: count },
   });
+  const course = await prisma.course.findUnique({ where: { id }, select: { slug: true } });
+  bustCourse(course?.slug);
   return NextResponse.json(created);
 }
 

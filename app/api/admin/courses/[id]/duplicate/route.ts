@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { bustHome } from "@/lib/revalidate";
 
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   const c = await prisma.course.findUnique({
@@ -61,5 +62,6 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       faqs: { create: c.faqs.map(({ id, courseId, ...rest }) => rest) },
     },
   });
+  bustHome();
   return NextResponse.json(created);
 }

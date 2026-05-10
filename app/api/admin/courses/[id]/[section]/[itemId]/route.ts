@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { SECTIONS, isSection } from "@/lib/course-sections";
+import { bustCourse } from "@/lib/revalidate";
 
 export async function PATCH(
   req: NextRequest,
@@ -13,6 +15,8 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid" }, { status: 400 });
   }
   const updated = await def.delegate().update({ where: { id: params.itemId }, data: parsed.data });
+  const course = await prisma.course.findUnique({ where: { id: params.id }, select: { slug: true } });
+  bustCourse(course?.slug);
   return NextResponse.json(updated);
 }
 
@@ -23,5 +27,7 @@ export async function DELETE(
   if (!isSection(params.section)) return NextResponse.json({ error: "Unknown section" }, { status: 404 });
   const def = SECTIONS[params.section];
   await def.delegate().delete({ where: { id: params.itemId } });
+  const course = await prisma.course.findUnique({ where: { id: params.id }, select: { slug: true } });
+  bustCourse(course?.slug);
   return NextResponse.json({ ok: true });
 }

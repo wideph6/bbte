@@ -166,7 +166,7 @@ function CourseCard({
       </div>
 
       {/* ── Body ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col p-6 sm:p-7">
+      <div className="flex flex-1 flex-col p-6 sm:p-7 text-center">
         {/* Title — generous leading for Nastaliq */}
         <h2 className="text-2xl sm:text-[1.7rem] font-semibold text-slate-900 leading-snug pb-1 mb-3 group-hover:text-brand-dark transition-colors">
           {title}
