@@ -76,7 +76,7 @@ export function SiteFooter({ settings }: { settings: Settings | null }) {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
           {/* Brand column */}
           <div>
-            <Link href="/" className="inline-flex items-center gap-3 mb-4">
+            <Link href="/" className="inline-flex items-center gap-3">
               <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 ring-1 ring-white/20 text-xl font-bold text-white">
                 {initial}
               </div>
@@ -89,9 +89,6 @@ export function SiteFooter({ settings }: { settings: Settings | null }) {
                 ) : null}
               </div>
             </Link>
-            <p className="text-sm text-emerald-100/80 leading-relaxed max-w-sm">
-              معیاری اور قابلِ اعتماد آن لائن کورسز جو آپ کو گھر بیٹھے سیکھنے کا موقع فراہم کرتے ہیں۔
-            </p>
           </div>
 
           {/* Links column */}

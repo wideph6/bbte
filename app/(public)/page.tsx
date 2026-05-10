@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/public/site-header";
 import { SiteFooter } from "@/components/public/site-footer";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
-import { ArrowLeftIcon, SparkleIcon, PlayIcon } from "@/components/public/icons";
+import { ArrowLeftIcon, SparkleIcon } from "@/components/public/icons";
 
 export const revalidate = 60;
 
@@ -152,17 +152,6 @@ function CourseCard({
           <span className="absolute right-2 top-2 h-px w-7 rotate-[225deg] origin-right bg-white/70" />
         </div>
 
-        {/* Live badge — left side */}
-        <div
-          className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-brand-dark shadow-soft backdrop-blur-sm"
-        >
-          <span className="relative grid h-2 w-2 place-items-center">
-            <span className="absolute inset-0 rounded-full bg-emerald-500/60 animate-pulse-ring" />
-            <span className="relative h-2 w-2 rounded-full bg-emerald-600" />
-          </span>
-          <span>لائیو کلاسز</span>
-        </div>
-
         {/* Price chip — bottom on image, properly contrasted */}
         {price ? (
           <div className="absolute bottom-3 right-3 inline-flex items-stretch overflow-hidden rounded-2xl bg-white/95 shadow-lift ring-1 ring-white/70 backdrop-blur-sm">
@@ -203,7 +192,7 @@ function CourseCard({
               aria-hidden="true"
             />
             <span className="relative inline-flex items-center gap-2 text-base font-semibold">
-              <PlayIcon className="h-3.5 w-3.5 text-gold-soft" />
+              <span className="h-1.5 w-1.5 rounded-full bg-gold-soft" aria-hidden="true" />
               <span>تفصیل دیکھیں</span>
             </span>
             <span className="relative grid h-8 w-8 place-items-center rounded-full bg-white/15 ring-1 ring-white/20 transition-transform duration-300 group-hover:-translate-x-1">

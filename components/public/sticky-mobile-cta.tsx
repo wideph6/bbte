@@ -4,27 +4,41 @@ import { WhatsAppButton, type WhatsAppButtonProps } from "./whatsapp-button";
 
 /**
  * Sticky bottom CTA for mobile only. Hides itself when any inline WhatsApp
- * button is in viewport so it doesn't double-up with hero/details/final CTAs
- * already on screen.
+ * button is in the viewport so it doesn't double-up with hero / details /
+ * final CTAs already on screen.
+ *
+ * Why a Set + selector exclusion?
+ *   The earlier counter-based version flickered on mobile because the sticky
+ *   button itself carries `data-placement="sticky"` — observing it caused a
+ *   feedback loop (sticky shows → counts itself → hides → counts drops →
+ *   shows again). We now (a) exclude the sticky placement from the selector,
+ *   and (b) track each target's intersecting state in a Set so the final
+ *   show/hide decision is deterministic regardless of event order.
  */
 export function StickyMobileCTA(props: WhatsAppButtonProps) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const targets = Array.from(document.querySelectorAll("[data-placement]")) as HTMLElement[];
+
+    const targets = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '[data-placement]:not([data-placement="sticky"])'
+      )
+    );
     if (targets.length === 0) {
       setShow(true);
       return;
     }
-    let visibleCount = 0;
+
+    const visible = new Set<Element>();
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting) visibleCount++;
-          else visibleCount = Math.max(0, visibleCount - 1);
+          if (e.isIntersecting) visible.add(e.target);
+          else visible.delete(e.target);
         }
-        setShow(visibleCount === 0);
+        setShow(visible.size === 0);
       },
       { rootMargin: "-40px" }
     );
@@ -39,7 +53,6 @@ export function StickyMobileCTA(props: WhatsAppButtonProps) {
       }`}
       aria-hidden={!show}
     >
-      {/* Soft gradient fade above the bar so it floats over content. */}
       <div
         className="pointer-events-none h-6 bg-gradient-to-t from-cream/95 to-transparent"
         aria-hidden="true"

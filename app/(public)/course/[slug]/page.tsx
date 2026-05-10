@@ -15,7 +15,6 @@ import {
   SparkleIcon,
   ShieldCheckIcon,
   UsersIcon,
-  PlayIcon,
 } from "@/components/public/icons";
 import { FaqAccordion } from "@/components/public/faq-accordion";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
@@ -126,14 +125,6 @@ export default async function CourseLandingPage({ params }: PageProps) {
             <div className="grid gap-10 lg:grid-cols-2 lg:gap-14 items-center">
               {/* Text column */}
               <div>
-                <div
-                  data-reveal="out"
-                  className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-white/70 backdrop-blur-sm px-4 py-1.5 text-sm text-gold-deep shadow-soft mb-6"
-                >
-                  <SparkleIcon className="h-4 w-4 text-gold" />
-                  <span>آن لائن لائیو کورس</span>
-                </div>
-
                 <h1
                   data-reveal="out"
                   className="display text-3xl sm:text-5xl lg:text-6xl font-normal text-brand-darker mb-5"
@@ -198,11 +189,6 @@ export default async function CourseLandingPage({ params }: PageProps) {
                         className="object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" aria-hidden="true" />
-                      {/* Decorative play icon overlay — pure visual, not interactive. */}
-                      <div className="absolute right-4 bottom-4 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-sm font-medium text-brand-dark shadow-lift backdrop-blur-sm">
-                        <PlayIcon className="h-3.5 w-3.5" />
-                        <span>لائیو کلاسز</span>
-                      </div>
                     </>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-pattern-arabesque text-white/70 text-lg">
